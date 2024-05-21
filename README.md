@@ -7,9 +7,6 @@ This is the backend for a pet adoption application built with NestJS and MongoDB
 - [Features](#features)
 - [Getting Started](#getting-started)
 - [Installation](#installation)
-- [Configuration](#configuration)
-- [Running the Application](#running-the-application)
-
 
 ## Features
 
@@ -41,7 +38,3 @@ Install the dependencies:
 npm install
 or simply
 npm i
-
-### Running the Application
-
-npm run start:dev
