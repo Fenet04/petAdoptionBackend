@@ -20,6 +20,9 @@ export class Pet {
   @Prop()
   description: string;
 
+  @Prop()
+  image: string;
+
   @Prop({ default: Date.now })
   createdAt: Date;
 }
