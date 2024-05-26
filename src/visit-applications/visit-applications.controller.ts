@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query } from '@nestjs/common';
 import { VisitApplicationsService } from './visit-applications.service';
 import { CreateVisitApplicationDto } from './dto/create-visit-application.dto';
 import { UpdateVisitApplicationDto } from './dto/update-visit-application.dto';
@@ -25,15 +25,24 @@ export class VisitApplicationsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('me')
+  findUserApplications(@Request() req) {
+    const userId = req.user._id;
+    return this.visitApplicationsService.findByUserId(userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.visitApplicationsService.findOne(id);
+  findOne(@Param('id') id: string, @Request() req) {
+    const userId = req.user._id;
+    return this.visitApplicationsService.findOne(id, userId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateVisitApplicationDto: Partial<CreateVisitApplicationDto>) {
-    return this.visitApplicationsService.update(id, updateVisitApplicationDto);
+  update(@Param('id') id: string, @Body() updateVisitApplicationDto: Partial<CreateVisitApplicationDto>, @Request() req) {
+    const userId = req.user._id;
+    return this.visitApplicationsService.update(id, updateVisitApplicationDto, userId);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -45,7 +54,8 @@ export class VisitApplicationsController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.visitApplicationsService.remove(id);
+  remove(@Param('id') id: string, @Request() req) {
+    const userId = req.user._id;
+    return this.visitApplicationsService.remove(id, userId);
   }
 }

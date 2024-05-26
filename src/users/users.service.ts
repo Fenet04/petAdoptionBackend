@@ -34,18 +34,15 @@ export class UsersService {
     return newAdmin.save();
   }
 
-  async findAll(): Promise<User[]> {
-    try {
-      return await this.userModel.find().exec();
-    } catch (error) {
-      throw new HttpException('Failed to fetch users', HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
   async findByEmail(email: string): Promise<User | undefined> {
     return this.userModel.findOne({ email }).lean().exec();
   }
 
   async findById(id: string): Promise<User> {
     return this.userModel.findById(id).lean().exec();
+  }
+
+  async findAll(): Promise<User[]> {
+    return this.userModel.find().exec();
   }
 }

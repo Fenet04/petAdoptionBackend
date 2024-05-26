@@ -1,7 +1,10 @@
-import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards, Param } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { CreateAdminDto } from './dto/create-admin.dto';
+import { CreateAdminDto } from './dto/create-admin.dto'; 
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 
 @Controller('users')
 export class UsersController {
@@ -16,18 +19,26 @@ export class UsersController {
   async createAdmin(@Body() createAdminDto: CreateAdminDto) {
     return this.usersService.createAdmin(createAdminDto);
   }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Get()
   findAll() {
     return this.usersService.findAll();
   }
 
-  @Get(':email')
-  findByEmail(@Param('email') email: string) {
-    return this.usersService.findByEmail(email);
-  }
-
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Get(':id')
   findById(@Param('id') id: string) {
     return this.usersService.findById(id);
   }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @Get(':email')
+  findOne(@Param('email') id: string) {
+    return this.usersService.findByEmail(id);
+  }
+
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
 import { AdoptionApplicationsService } from './adoption-applications.service';
 import { CreateAdoptionApplicationDto } from './dto/create-adoption-application.dto';
 import { UpdateAdoptionApplicationDto } from './dto/update-adoption-application.dto';
@@ -12,27 +12,37 @@ export class AdoptionApplicationsController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createAdoptionApplicationDto: CreateAdoptionApplicationDto, @Request() req, @Query('petId') petId: string) {
-        const userId = req.user.userId;
-        return this.adoptionApplicationsService.create(createAdoptionApplicationDto, userId, petId);
-      }
+  create(@Body() createAdoptionApplicationDto: CreateAdoptionApplicationDto, @Request() req) {
+    const userId = req.user._id;
+    return this.adoptionApplicationsService.create(createAdoptionApplicationDto, userId);
+  }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Get()
   findAll() {
     return this.adoptionApplicationsService.findAll();
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('me')
+  findUserApplications(@Request() req) {
+    const userId = req.user._id;
+    return this.adoptionApplicationsService.findByUserId(userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.adoptionApplicationsService.findOne(id);
+  findOne(@Param('id') id: string, @Request() req) {
+    const userId = req.user._id;
+    return this.adoptionApplicationsService.findOne(id, userId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAdoptionApplicationDto: UpdateAdoptionApplicationDto) {
-    return this.adoptionApplicationsService.update(id, updateAdoptionApplicationDto);
+  update(@Param('id') id: string, @Body() updateAdoptionApplicationDto: UpdateAdoptionApplicationDto, @Request() req) {
+    const userId = req.user._id;
+    return this.adoptionApplicationsService.update(id, updateAdoptionApplicationDto, userId);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -44,7 +54,8 @@ export class AdoptionApplicationsController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.adoptionApplicationsService.remove(id);
+  remove(@Param('id') id: string, @Request() req) {
+    const userId = req.user._id;
+    return this.adoptionApplicationsService.remove(id, userId);
   }
 }
