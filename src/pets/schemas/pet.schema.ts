@@ -17,6 +17,9 @@ export class Pet {
   @Prop({ required: true })
   species: string;
 
+  @Prop({ required: true })
+  category: string;
+
   @Prop()
   description: string;
 

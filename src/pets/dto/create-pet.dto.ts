@@ -15,6 +15,9 @@ export class CreatePetDto {
   species: string;
 
   @IsString()
+  category: string;
+
+  @IsString()
   @IsOptional()
   description?: string;
 }
