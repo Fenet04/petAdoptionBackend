@@ -13,6 +13,8 @@ export class AdoptionApplicationsController {
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() createAdoptionApplicationDto: CreateAdoptionApplicationDto, @Request() req) {
+    console.log('User ID:', req.user._id); // Log the user ID
+    console.log('Token:', req.headers.authorization); 
     const userId = req.user._id;
     return this.adoptionApplicationsService.create(createAdoptionApplicationDto, userId);
   }
@@ -39,7 +41,7 @@ export class AdoptionApplicationsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch(':id')
+  @Patch('me/:id')
   update(@Param('id') id: string, @Body() updateAdoptionApplicationDto: UpdateAdoptionApplicationDto, @Request() req) {
     const userId = req.user._id;
     return this.adoptionApplicationsService.update(id, updateAdoptionApplicationDto, userId);
