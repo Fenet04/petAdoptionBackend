@@ -53,7 +53,7 @@ export class AdoptionApplicationsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Delete(':id')
+  @Delete('me/:id')
   remove(@Param('id') id: string, @Request() req) {
     const userId = req.user._id;
     return this.adoptionApplicationsService.remove(id, userId);

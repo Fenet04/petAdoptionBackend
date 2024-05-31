@@ -1,4 +1,5 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
+
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateAdoptionApplicationDto } from './dto/create-adoption-application.dto';
@@ -7,6 +8,7 @@ import { AdoptionApplication, AdoptionApplicationDocument } from './schemas/adop
 
 @Injectable()
 export class AdoptionApplicationsService {
+  private readonly logger = new Logger(AdoptionApplicationsService.name);
   constructor(
     @InjectModel(AdoptionApplication.name) private adoptionApplicationModel: Model<AdoptionApplicationDocument>,
   ) {}
@@ -66,18 +68,43 @@ export class AdoptionApplicationsService {
     }
   }
 
+  // async remove(id: string, userId: string): Promise<AdoptionApplication> {
+  //   try {
+  //     const application = await this.adoptionApplicationModel.findById(id).exec();
+  //     if (!application) throw new HttpException('Adoption application not found', HttpStatus.NOT_FOUND);
+  //     if (application.userId !== userId) throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+  //     const deletedApplication = await this.adoptionApplicationModel.findByIdAndDelete(id).exec();
+  //     return deletedApplication;
+  //   } catch (error) {
+  //     throw new HttpException('Failed to delete adoption application', HttpStatus.INTERNAL_SERVER_ERROR);
+  //   }
+  // }
+
   async remove(id: string, userId: string): Promise<AdoptionApplication> {
+    this.logger.debug(`Attempting to delete adoption application with ID: ${id} for user ID: ${userId}`);
+
     try {
       const application = await this.adoptionApplicationModel.findById(id).exec();
-      if (!application) throw new HttpException('Adoption application not found', HttpStatus.NOT_FOUND);
-      if (application.userId !== userId) throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+      if (!application) {
+        this.logger.warn(`Adoption application with ID: ${id} not found`);
+        throw new HttpException('Adoption application not found', HttpStatus.NOT_FOUND);
+      }
+      this.logger.debug(`Application found: ${JSON.stringify(application)}`);
+      this.logger.debug(`Comparing user ID from request: ${userId} (type: ${typeof userId}) with application user ID: ${application.userId} (type: ${typeof application.userId})`);
+
+      if (application.userId !== userId.toString()) {
+        this.logger.warn(`Unauthorized deletion attempt by user ID: ${userId} for application owned by user ID: ${application.userId}`);
+        throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+      }
+
       const deletedApplication = await this.adoptionApplicationModel.findByIdAndDelete(id).exec();
+      this.logger.debug(`Successfully deleted adoption application with ID: ${id}`);
       return deletedApplication;
     } catch (error) {
+      this.logger.error(`Failed to delete adoption application with ID: ${id}`, error.stack);
       throw new HttpException('Failed to delete adoption application', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-
   async updateStatus(id: string, status: string): Promise<AdoptionApplication> {
     try {
       const updatedApplication = await this.adoptionApplicationModel.findByIdAndUpdate(

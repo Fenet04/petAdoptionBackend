@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UploadedFile, UseInterceptors, HttpException, Req, HttpStatus } from '@nestjs/common';
 import { PetsService } from './pets.service';
 import { CreatePetDto } from './dto/create-pet.dto';
 import { UpdatePetDto } from './dto/update-pet.dto';
@@ -23,25 +23,59 @@ export class PetsController {
     return this.petsService.findOne(id);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin')
-  @Post()
-  @UseInterceptors(FileInterceptor('image', {
-    storage: diskStorage({
-      destination: './uploads',
-      filename: (req, file, cb) => {
-        const randomName = Array(32)
-          .fill(null)
-          .map(() => Math.round(Math.random() * 16).toString(16))
-          .join('');
-        cb(null, `${randomName}${extname(file.originalname)}`);
-      },
-    }),
-  }))
-  create(@Body() createPetDto: CreatePetDto, @UploadedFile() file: Express.Multer.File) {
-    return this.petsService.create(createPetDto, file.path);
-  }
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Roles('admin')
+  // @Post()
+  // @UseInterceptors(FileInterceptor('image', {
+  //   storage: diskStorage({
+  //     destination: './uploads',
+  //     filename: (req, file, cb) => {
+  //       const randomName = Array(32)
+  //         .fill(null)
+  //         .map(() => Math.round(Math.random() * 16).toString(16))
+  //         .join('');
+  //       cb(null, `${randomName}${extname(file.originalname)}`);
+  //     },
+  //   }),
+  // }))
+  // create(@Body() createPetDto: CreatePetDto, @UploadedFile() file: Express.Multer.File) {
+  //   return this.petsService.create(createPetDto, file.path);
+  // }
 
+  
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles('admin')
+    @Post()
+    @UseInterceptors(FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          cb(null, `${randomName}${extname(file.originalname)}`);
+        },
+      }),
+    }))
+    async create(@Req() req, @Body() createPetDto: CreatePetDto, @UploadedFile() file: Express.Multer.File) {
+      try {
+        console.log('Request user:', req.user);  // Log the user
+        console.log('Token:', req.headers.authorization);  // Log the token
+        console.log('Uploaded file:', file);  // Log the file
+  
+        if (!file) {
+          throw new HttpException('File not uploaded', HttpStatus.BAD_REQUEST);
+        }
+  
+        return await this.petsService.create(createPetDto, file.path);
+      } catch (error) {
+        console.error('Error in create:', error);
+        throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+    }
+  
+  
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @Patch(':id')
