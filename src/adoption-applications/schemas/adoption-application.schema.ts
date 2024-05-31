@@ -9,9 +9,6 @@ export class AdoptionApplication {
   userId: string;
 
   @Prop({ required: true })
-  petId: string;
-
-  @Prop({ required: true })
   fullName: string;
 
   @Prop({ required: true })
